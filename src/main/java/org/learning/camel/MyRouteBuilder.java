@@ -6,10 +6,7 @@ public class MyRouteBuilder extends RouteBuilder {
 
     @Override
     public void configure() throws Exception {
-        from("timer:foo?period={{myPeriod}}")
-            .bean("myBean", "hello")
-            .log("${body}")
-            .bean("myBean", "bye")
-            .log("${body}");
+        from("file://c:/Private/Repos/Camel_learning/data/inbox?noop=true")
+                .to("file:data/outbox");
     }
 }
