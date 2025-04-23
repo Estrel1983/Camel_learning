@@ -13,22 +13,22 @@ public final class MyApplication {
     private MyApplication() {
     }
 
-//    public static void main(String[] args) throws Exception {
-//        Main main = new Main(MyApplication.class);
-//        main.run(args);
-//    }
     public static void main(String[] args) throws Exception {
-        CamelContext context = new DefaultCamelContext();
-        context.addRoutes(new RouteBuilder() {
-            @Override
-            public void configure() throws Exception {
-                from("file://c:/Private/Repos/Camel_learning/data/inbox?noop=true")
-                        .to("file:data/outbox");
-            }
-        });
-        context.start();
-        Thread.sleep(5000);
-        context.stop();
+        Main main = new Main(MyApplication.class);
+        main.run(args);
     }
+//    public static void main(String[] args) throws Exception {
+//        CamelContext context = new DefaultCamelContext();
+//        context.addRoutes(new RouteBuilder() {
+//            @Override
+//            public void configure() throws Exception {
+//                from("file://c:/Private/Repos/Camel_learning/data/inbox?noop=true")
+//                        .to("file:data/outbox");
+//            }
+//        });
+//        context.start();
+//        Thread.sleep(5000);
+//        context.stop();
+//    }
 
 }
