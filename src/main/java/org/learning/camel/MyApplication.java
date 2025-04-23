@@ -1,5 +1,8 @@
 package org.learning.camel;
 
+import org.apache.camel.CamelContext;
+import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.main.Main;
 
 /**
@@ -10,9 +13,22 @@ public final class MyApplication {
     private MyApplication() {
     }
 
+//    public static void main(String[] args) throws Exception {
+//        Main main = new Main(MyApplication.class);
+//        main.run(args);
+//    }
     public static void main(String[] args) throws Exception {
-        Main main = new Main(MyApplication.class);
-        main.run(args);
+        CamelContext context = new DefaultCamelContext();
+        context.addRoutes(new RouteBuilder() {
+            @Override
+            public void configure() throws Exception {
+                from("file://c:/Private/Repos/Camel_learning/data/inbox?noop=true")
+                        .to("file:data/outbox");
+            }
+        });
+        context.start();
+        Thread.sleep(5000);
+        context.stop();
     }
 
 }
