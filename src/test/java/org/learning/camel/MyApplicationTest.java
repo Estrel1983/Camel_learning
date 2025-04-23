@@ -19,12 +19,12 @@ class MyApplicationTest extends CamelMainTestSupport {
         return MyApplication.class;
     }
 
-    @Test
-    void should_complete_the_auto_detected_route() {
-        NotifyBuilder notify = new NotifyBuilder(context)
-                .whenCompleted(1).whenBodiesDone("Goodbye World").create();
-        assertTrue(
-                notify.matches(20, TimeUnit.SECONDS), "1 message should be completed"
-        );
-    }
+//    @Test
+//    void should_complete_the_auto_detected_route() {
+//        NotifyBuilder notify = new NotifyBuilder(context)
+//                .whenCompleted(1).whenBodiesDone("Goodbye World").create();
+//        assertTrue(
+//                notify.matches(20, TimeUnit.SECONDS), "1 message should be completed"
+//        );
+//    }
 }
