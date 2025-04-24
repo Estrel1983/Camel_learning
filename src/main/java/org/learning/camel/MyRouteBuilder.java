@@ -25,5 +25,15 @@ public class MyRouteBuilder extends RouteBuilder {
         from("undertow:http://localhost:8081/test-endpoint")
                 .log("Received POST body ${body}")
                 .toD("file:data/outbox/${header.Folder}");
+        from("undertow:http://localhost:8081/loop-endpoint")
+                .log("Received POST body ${body}")
+                .to("direct:headerSetter");
+        from("direct:headerSetter")
+                .log("Header setting")
+                .setHeader("direction", simple("undertow:http://localhost:8081/loop-endpoint"))
+                .to("direct:loopRout");
+        from("direct:loopRout")
+                .log("Body in additional Root ${body}")
+                .toD("${header.direction}");
     }
 }
