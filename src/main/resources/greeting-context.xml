@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:camel="http://camel.apache.org/schema/spring"
+       xsi:schemaLocation="
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://camel.apache.org/schema/spring
+        http://camel.apache.org/schema/spring/camel-spring.xsd">
+    <bean id="myGreeter" class="org.learning.camel.greeting.SpanishGreeting"/>
+    <bean id="greetMeBeen" class="org.learning.camel.greeting.GreetingBean">
+        <property name="greeter" ref="myGreeter"/>
+    </bean>
+    <bean id="reverseProcessor" class="org.learning.camel.bean.ReverseProcessor"/>
+    <camel:camelContext id="camel">
+        <camel:route>
+            <camel:from uri="timer:greet?period=3000&amp;repeatCount=3"/>
+            <camel:bean ref="greetMeBeen" method="execute"/>
+            <camel:log message=">> ${body}"/>
+        </camel:route>
+    </camel:camelContext>
+</beans>

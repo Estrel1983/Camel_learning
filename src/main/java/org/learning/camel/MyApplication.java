@@ -4,6 +4,7 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.main.Main;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
  * Main class that boot the Camel application
@@ -13,9 +14,14 @@ public final class MyApplication {
     private MyApplication() {
     }
 
+//    public static void main(String[] args) throws Exception {
+//        Main main = new Main(MyApplication.class);
+//        main.run(args);
+//    }
     public static void main(String[] args) throws Exception {
-        Main main = new Main(MyApplication.class);
-        main.run(args);
+        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("greeting-context.xml");
+        context.registerShutdownHook();
+        System.out.println("Application started. Perss Ctrl+C");;
     }
 //    public static void main(String[] args) throws Exception {
 //        CamelContext context = new DefaultCamelContext();
