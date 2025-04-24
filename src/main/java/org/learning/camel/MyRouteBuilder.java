@@ -3,13 +3,14 @@ package org.learning.camel;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.component.properties.PropertiesComponent;
 
 public class MyRouteBuilder extends RouteBuilder {
 
     @Override
     public void configure() throws Exception {
-//        from("file://c:/Private/Repos/Camel_learning/data/inbox?noop=true")
-//                .to("file:data/outbox");
+//        PropertiesComponent prop = new PropertiesComponent("classpath:additional.properties");
+//        getContext().setPropertiesComponent(prop);
         from("jetty:http://localhost:8080/test-endpoint")
                 .log("Body before processor ${body}")
                 .process(new Processor() {
@@ -22,7 +23,7 @@ public class MyRouteBuilder extends RouteBuilder {
                 })
                 .log("Body after processor ${body}")
                 .to("file:data/outbox/1");
-        from("undertow:http://localhost:8081/test-endpoint")
+        from("undertow:http://localhost:{{undertow.port}}/test-endpoint")
                 .log("Received POST body ${body}")
                 .toD("file:data/outbox/${header.Folder}");
         from("undertow:http://localhost:8081/loop-endpoint")
