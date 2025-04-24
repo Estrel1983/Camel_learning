@@ -12,13 +12,13 @@
         <property name="greeter" ref="myGreeter"/>
     </bean>
     <bean id="reverseProcessor" class="org.learning.camel.bean.ReverseProcessor"/>
-    <bean id="properties" class="org.apache.camel.component.properties.PropertiesComponent">
-        <property name="location" value="classpath:additional.properties"/>
-    </bean>
+<!--    <bean id="properties" class="org.apache.camel.component.properties.PropertiesComponent">-->
+<!--        <property name="location" value="classpath:additional.properties"/>-->
+<!--    </bean>-->
     <camel:camelContext id="camel">
-<!--        <camel:propertyPlaceholder id="properties">-->
-<!--            <camel:propertiesLocation path="classpath:additional.properties"/>-->
-<!--        </camel:propertyPlaceholder>-->
+        <camel:propertyPlaceholder id="properties">
+            <camel:propertiesLocation path="classpath:additional.properties"/>
+        </camel:propertyPlaceholder>
         <camel:packageScan>
             <camel:package>org.learning.camel</camel:package>
         </camel:packageScan>
