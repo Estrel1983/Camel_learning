@@ -24,6 +24,6 @@ public class MyRouteBuilder extends RouteBuilder {
                 .to("file:data/outbox/1");
         from("undertow:http://localhost:8081/test-endpoint")
                 .log("Received POST body ${body}")
-                .to("file:data/outbox/2");
+                .toD("file:data/outbox/${header.Folder}");
     }
 }
