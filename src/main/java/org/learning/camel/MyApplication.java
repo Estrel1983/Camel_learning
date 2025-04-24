@@ -14,15 +14,15 @@ public final class MyApplication {
     private MyApplication() {
     }
 
-    public static void main(String[] args) throws Exception {
-        Main main = new Main(MyApplication.class);
-        main.run(args);
-    }
 //    public static void main(String[] args) throws Exception {
-//        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("greeting-context.xml");
-//        context.registerShutdownHook();
-//        System.out.println("Application started. Perss Ctrl+C");;
+//        Main main = new Main(MyApplication.class);
+//        main.run(args);
 //    }
+    public static void main(String[] args) throws Exception {
+        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("greeting-context.xml");
+        context.registerShutdownHook();
+        System.out.println("Application started. Perss Ctrl+C");;
+    }
 //    public static void main(String[] args) throws Exception {
 //        CamelContext context = new DefaultCamelContext();
 //        context.addRoutes(new RouteBuilder() {

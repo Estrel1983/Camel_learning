@@ -13,9 +13,9 @@
     </bean>
     <bean id="reverseProcessor" class="org.learning.camel.bean.ReverseProcessor"/>
     <camel:camelContext id="camel">
-        <camel:packageScan>
+        <!--camel:packageScan>
             <camel:package>org.learning.camel</camel:package>
-        </camel:packageScan>
+        </camel:packageScan-->
         <!--camel:route>
             <camel:from uri="timer:greet?period=3000&amp;repeatCount=3"/>
             <camel:bean ref="greetMeBeen" method="execute"/>
@@ -33,5 +33,23 @@
             <camel:log message="Received POST body ${body}"/>
             <camel:to uri="file:data/outbox/2"/>
         </camel:route-->
+        <camel:route>
+            <camel:from uri="undertow:http://localhost:8081/loop-endpoint"/>
+            <camel:log message="Received POST body ${body}"/>
+            <camel:to uri="direct:headerSetter"/>
+        </camel:route>
+        <camel:route>
+            <camel:from uri="direct:headerSetter"/>
+            <camel:log message="Header setting"/>
+            <camel:setHeader name="direction">
+                <camel:simple>undertow:http://localhost:8081/loop-endpoint</camel:simple>
+            </camel:setHeader>
+            <camel:to uri="direct:loopRout"/>
+        </camel:route>
+        <camel:route>
+            <camel:from uri="direct:loopRout"/>
+            <camel:log message="Dynamic routing"/>
+            <camel:toD uri="${header.direction}"/>
+        </camel:route>
     </camel:camelContext>
 </beans>
