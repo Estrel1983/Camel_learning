@@ -1,10 +1,5 @@
 package org.learning.camel;
 
-import org.apache.camel.CamelContext;
-import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.component.properties.PropertiesComponent;
-import org.apache.camel.impl.DefaultCamelContext;
-import org.apache.camel.main.Main;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
@@ -21,7 +16,7 @@ public final class MyApplication {
 //        main.run(args);
 //    }
     public static void main(String[] args) throws Exception {
-        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("greeting-context.xml");
+        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("greeting-context.xml","EipRoutesContext.xml");
         context.registerShutdownHook();
         System.out.println("Application started. Press Ctrl+C");;
     }

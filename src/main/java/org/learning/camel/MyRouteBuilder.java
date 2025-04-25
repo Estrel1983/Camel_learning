@@ -23,9 +23,6 @@ public class MyRouteBuilder extends RouteBuilder {
                 })
                 .log("Body after processor ${body}")
                 .to("file:data/outbox/1");
-        from("undertow:http://localhost:{{undertow.port}}/test-endpoint")
-                .log("Received POST body ${body}")
-                .toD("file:data/outbox/${header.Folder}");
         from("undertow:http://localhost:8081/loop-endpoint")
                 .log("Received POST body ${body}")
                 .to("direct:headerSetter");

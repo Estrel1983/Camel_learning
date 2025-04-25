@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:camel="http://camel.apache.org/schema/spring"
+       xsi:schemaLocation="
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://camel.apache.org/schema/spring
+        http://camel.apache.org/schema/spring/camel-spring.xsd">
+    <bean id="properties" class="org.apache.camel.component.properties.PropertiesComponent">
+        <property name="location" value="classpath:additional.properties"/>
+    </bean>
+        <camel:camelContext id="eip_routes">
+            <camel:route>
+                <camel:from uri="undertow:{{undertow.http}}/test-endpoint"/>
+                <camel:choice>
+                    <camel:description>We determine whether the file needs to be copied based on the "isCopied" header</camel:description>
+                    <camel:when>
+                        <camel:simple>${header.isCopied} == 'true'</camel:simple>
+                        <camel:log message="Will be saved"/>
+                        <camel:toD uri="file:data/outbox/${header.Folder}"/>
+                    </camel:when>
+                    <camel:otherwise>
+                        <camel:log message="Will not be saved"/>
+                        <camel:stop/>
+                    </camel:otherwise>
+                </camel:choice>
+            </camel:route>
+            <camel:route>
+                <camel:from uri="undertow:{{undertow.http}}/cb_router"/>
+                <camel:choice precondition="true">
+                    <camel:when>
+                        <camel:simple>{{?foo}}</camel:simple>
+                        <camel:log message="This route for foo"/>
+                        <camel:stop/>
+                    </camel:when>
+                    <camel:when>
+                        <camel:simple>{{?bar}}</camel:simple>
+                        <camel:log message="This route for bar"/>
+                        <camel:stop/>
+                    </camel:when>
+                    <camel:otherwise>
+                        <camel:log message="Otherwise rout"/>
+                        <camel:stop/>
+                    </camel:otherwise>
+                </camel:choice>
+            </camel:route>
+        </camel:camelContext>
+</beans>
