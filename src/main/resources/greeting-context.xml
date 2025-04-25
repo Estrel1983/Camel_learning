@@ -19,21 +19,21 @@
 <!--        <camel:propertyPlaceholder id="properties">-->
 <!--            <camel:propertiesLocation path="classpath:additional.properties"/>-->
 <!--        </camel:propertyPlaceholder>-->
-        <camel:packageScan>
-            <camel:package>org.learning.camel</camel:package>
-        </camel:packageScan>
+<!--        <camel:packageScan>-->
+<!--            <camel:package>org.learning.camel</camel:package>-->
+<!--        </camel:packageScan>-->
         <!--camel:route>
             <camel:from uri="timer:greet?period=3000&amp;repeatCount=3"/>
             <camel:bean ref="greetMeBeen" method="execute"/>
             <camel:log message=">> ${body}"/>
         </camel:route-->
-<!--        <camel:route>-->
-<!--            <camel:from uri="jetty:http://localhost:8080/test-endpoint"/>-->
-<!--            <camel:log message="Body before processor ${body}"/>-->
-<!--            <camel:process ref="reverseProcessor"/>-->
-<!--            <camel:log message="Body after processor ${body}"/>-->
-<!--            <camel:to uri="file:data/outbox/1"/>-->
-<!--        </camel:route>-->
+        <camel:route>
+            <camel:from uri="jetty:http://localhost:8080/test-endpoint"/>
+            <camel:log message="Body before processor ${body}"/>
+            <camel:process ref="reverseProcessor"/>
+            <camel:log message="Body after processor ${body}"/>
+            <camel:to uri="file:data/outbox/1"/>
+        </camel:route>
 <!--        <camel:route>-->
 <!--            <camel:from uri="undertow:http://localhost:{{undertow.port}}/test-endpoint"/>-->
 <!--            <camel:log message="Received POST body ${body}"/>-->
