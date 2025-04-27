@@ -13,14 +13,26 @@ public class EipRouteBuilder extends RouteBuilder {
                 .when(simple("{{?foo}}")).log("This route for foo").stop().endChoice()
                 .when(simple("{{?bar}}")).log("This route for bar").stop().endChoice()
                 .otherwise().log("Otherwise rout").stop();
-        from("undertow:{{undertow.http}}/test-endpoint")
-                .choice().description("We determine whether the file needs to be copied based on the \"isCopied\" header")
-                .when(header("isCopied").isEqualTo(true))
-                .log("Will be saved")
+//        from("undertow:{{undertow.http}}/test-endpoint")
+//                .choice().description("We determine whether the file needs to be copied based on the \"isCopied\" header")
+//                .when(header("isCopied").isEqualTo(true))
+//                .log("Will be saved")
 //                        .loadBalance().roundRobin().toD("file:data/outbox/${header.Folder}").end().endChoice()
-                .toD("file:data/outbox/${header.Folder}")
+//                .toD("file:data/outbox/${header.Folder}")
+//                .otherwise()
+//                .log("Will not be saved")
+//                .stop()
+//                .log("Routing after choice");
+        from("undertow:{{undertow.http}}/routAfterChoice")
+                .choice()
+                .when(header("isCopied").isEqualTo(true))
+                    .log("Will be saved")
+                .when(header("isCopied").isEqualTo(false))
+                    .log("Will not be saved")
                 .otherwise()
-                .log("Will not be saved")
-                .stop();
+                    .log("Everything is broken")
+                    .stop()
+                .end()
+                .log("Routing after choice");
     }
 }
