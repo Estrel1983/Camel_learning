@@ -27,6 +27,24 @@
                 </camel:choice>
             </camel:route>
             <camel:route>
+                <camel:from uri="undertow:{{undertow.http}}/routAfterChoice"/>
+                <camel:choice>
+                    <camel:when>
+                        <camel:simple>${header.isCopied} == 'true'</camel:simple>
+                        <camel:log message="Will be saved"/>
+                    </camel:when>
+                    <camel:when>
+                        <camel:simple>${header.isCopied} == 'false'</camel:simple>
+                        <camel:log message="Will not be saved"/>
+                    </camel:when>
+                    <camel:otherwise>
+                        <camel:log message="Everything is broken"/>
+                        <camel:stop/>
+                    </camel:otherwise>
+                </camel:choice>
+                <camel:log message="Routing after choice"/>
+            </camel:route>
+            <camel:route>
                 <camel:from uri="undertow:{{undertow.http}}/cb_router"/>
                 <camel:choice precondition="true">
                     <camel:when>
