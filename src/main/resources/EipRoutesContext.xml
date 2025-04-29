@@ -12,6 +12,26 @@
     </bean>
         <camel:camelContext id="eip_routes">
             <camel:route>
+                <camel:from uri="undertow:{{undertow.http}}/filtersInRout"/>
+                <camel:filter>
+                    <camel:simple>${header.filtered} == 'true'</camel:simple>
+                    <camel:log message="Passed the filter."/>
+                    <camel:stop/>
+                </camel:filter>
+                <camel:log message="Did not pass the filter"/>
+            </camel:route>
+            <camel:route>
+                <camel:from uri="undertow:{{undertow.http}}/complexFiltersInRout"/>
+                <camel:filter statusPropertyName="isFiltered">
+                    <camel:method beanType="org.learning.camel.bean.MessageFilterBean" method="allowedOnlyUnique"/>
+                    <camel:log message="Passed the filter - ${body}"/>
+                    <camel:log message="Now with property ${exchangeProperty.isFiltered}"/>
+                    <camel:stop/>
+                </camel:filter>
+                <camel:log message="This string already exists - ${body}"/>
+                <camel:log message="Now with property ${exchangeProperty.isFiltered}"/>
+            </camel:route>
+            <camel:route>
                 <camel:from uri="undertow:{{undertow.http}}/test-endpoint"/>
                 <camel:choice>
                     <camel:description>We determine whether the file needs to be copied based on the "isCopied" header</camel:description>

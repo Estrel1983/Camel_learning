@@ -3,10 +3,26 @@ package org.learning.camel;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
+import org.learning.camel.bean.MessageFilterBean;
 
 public class EipRouteBuilder extends RouteBuilder {
     @Override
     public void configure() throws Exception {
+        from("undertow:{{undertow.http}}/filtersInRout")
+                .filter(simple("${header.filtered} == 'true'"))
+                        .log("Passed the filter.")
+                        .stop()
+                .end()
+                .log("Did not pass the filter");
+        from("undertow:{{undertow.http}}/complexFiltersInRout")
+                .filter().method(MessageFilterBean.class, "allowedOnlyUnique")
+                .statusPropertyName("isFiltered")
+                        .log("Passed the filter - ${body}")
+                        .log("Now with property ${exchangeProperty.isFiltered}")
+                        .stop()
+                        .end()
+                .log("This string already exists - ${body}")
+                .log("Now with property ${exchangeProperty.isFiltered}");
         from("undertow:{{undertow.http}}/cb_router")
                 .choice()
                 .precondition(true)
@@ -22,7 +38,6 @@ public class EipRouteBuilder extends RouteBuilder {
 //                .otherwise()
 //                .log("Will not be saved")
 //                .stop()
-//                .log("Routing after choice");
         from("undertow:{{undertow.http}}/routAfterChoice")
                 .choice()
                 .when(header("isCopied").isEqualTo(true))
