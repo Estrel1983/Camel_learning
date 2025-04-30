@@ -7,10 +7,10 @@
         http://www.springframework.org/schema/beans/spring-beans.xsd
         http://camel.apache.org/schema/spring
         http://camel.apache.org/schema/spring/camel-spring.xsd">
-    <import resource="routes/jdbcRoutes.xml"/>
-    <import resource="routes/EipRoutes.xml"/>
-    <import resource="routes/greetingRoutes.xml"/>
     <import resource="beans.xml"/>
     <camel:camelContext id="mainContext">
+        <camel:routeContextRef ref="jdbcRoutes"/>
+        <camel:routeContextRef ref="eipRoutes"/>
+        <camel:routeContextRef ref="greetingRoutes"/>
     </camel:camelContext>
 </beans>
