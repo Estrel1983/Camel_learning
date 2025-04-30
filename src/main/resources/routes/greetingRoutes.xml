@@ -15,11 +15,11 @@
             <camel:log message="Body after processor ${body}"/>
             <camel:to uri="file:data/outbox/1"/>
         </camel:route>
-        <camel:route>
-            <camel:from uri="undertow:http://localhost:{{undertow.port}}/test-endpoint"/>
-            <camel:log message="Received POST body ${body}"/>
-            <camel:to uri="file:data/outbox/2"/>
-        </camel:route>
+<!--        <camel:route>-->
+<!--            <camel:from uri="undertow:http://localhost:{{undertow.port}}/test-endpoint"/>-->
+<!--            <camel:log message="Received POST body ${body}"/>-->
+<!--            <camel:to uri="file:data/outbox/2"/>-->
+<!--        </camel:route>-->
         <camel:route>
             <camel:from uri="undertow:http://localhost:8081/loop-endpoint"/>
             <camel:log message="Received POST body ${body}"/>
