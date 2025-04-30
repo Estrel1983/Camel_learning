@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<camel:routes xmlns:camel="http://camel.apache.org/schema/spring"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="
+                http://camel.apache.org/schema/spring
+                http://camel.apache.org/schema/spring/camel-spring.xsd">
+    <camel:route>
+        <camel:from uri="undertow:{{undertow.http}}/getArtist"/>
+        <camel:setBody>
+            <camel:simple>SELECT * FROM public.artists</camel:simple>
+        </camel:setBody>
+        <camel:to uri="jdbc:dataSource"/>
+        <camel:marshal>
+            <camel:json library="Jackson"/>
+        </camel:marshal>
+        <camel:log message="Result: ${body}"/>
+    </camel:route>
+</camel:routes>

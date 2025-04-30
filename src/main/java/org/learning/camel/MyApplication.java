@@ -18,8 +18,7 @@ public final class MyApplication {
     }
 //    public static void main(String[] args) throws Exception {
 //        ClassPathXmlApplicationContext context =
-//                new ClassPathXmlApplicationContext("jdbcContext.xml");
-//                                                    //"greeting-context.xml" "EipRoutesContext.xml"
+//                new ClassPathXmlApplicationContext("CamelContext.xml");
 //        context.registerShutdownHook();
 //        System.out.println("Application started. Press Ctrl+C");;
 //    }

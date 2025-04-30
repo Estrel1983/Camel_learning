@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<camel:routes xmlns:camel="http://camel.apache.org/schema/spring"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="
+                http://camel.apache.org/schema/spring
+                http://camel.apache.org/schema/spring/camel-spring.xsd">
+    <camel:route>
+        <camel:from uri="jetty:http://localhost:8080/test-endpoint"/>
+        <camel:log message="Body before processor ${body}"/>
+        <camel:process ref="reverseProcessor"/>
+        <camel:log message="Body after processor ${body}"/>
+        <camel:to uri="file:data/outbox/1"/>
+    </camel:route>
+    <camel:route>
+        <camel:from uri="undertow:http://localhost:{{undertow.port}}/test-endpoint"/>
+        <camel:log message="Received POST body ${body}"/>
+        <camel:to uri="file:data/outbox/2"/>
+    </camel:route>
+    <camel:route>
+        <camel:from uri="undertow:http://localhost:8081/loop-endpoint"/>
+        <camel:log message="Received POST body ${body}"/>
+        <camel:to uri="direct:headerSetter"/>
+    </camel:route>
+    <camel:route>
+        <camel:from uri="direct:headerSetter"/>
+        <camel:log message="Header setting"/>
+        <camel:setHeader name="direction">
+            <camel:simple>undertow:http://localhost:8081/loop-endpoint</camel:simple>
+        </camel:setHeader>
+        <camel:to uri="direct:loopRout"/>
+    </camel:route>
+    <camel:route>
+        <camel:from uri="direct:loopRout"/>
+        <camel:log message="Dynamic routing"/>
+        <camel:toD uri="${header.direction}"/>
+    </camel:route>
+</camel:routes>
