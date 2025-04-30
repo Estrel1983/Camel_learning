@@ -10,6 +10,7 @@
     <bean id="properties" class="org.apache.camel.component.properties.PropertiesComponent">
         <property name="location" value="classpath:additional.properties"/>
     </bean>
+    <bean id="reverseProcessor" class="org.learning.camel.bean.ReverseProcessor"/>
     <bean id="dataSource" class="org.apache.commons.dbcp2.BasicDataSource">
         <property name="driverClassName" value="org.postgresql.Driver"/>
         <property name="url" value="jdbc:postgresql://localhost:5432/carddb"/>
@@ -19,17 +20,4 @@
     <bean id="jdbc" class="org.apache.camel.component.jdbc.JdbcComponent">
         <property name="dataSource" ref="dataSource"/>
     </bean>
-    <camel:camelContext id="jdbc_context">
-        <camel:route>
-            <camel:from uri="undertow:{{undertow.http}}/getArtist"/>
-            <camel:setBody>
-                <camel:simple>SELECT * FROM public.artists</camel:simple>
-            </camel:setBody>
-            <camel:to uri="jdbc:dataSource"/>
-            <camel:marshal>
-                <camel:json library="Jackson"/>
-            </camel:marshal>
-            <camel:log message="Result: ${body}"/>
-        </camel:route>
-    </camel:camelContext>
 </beans>
