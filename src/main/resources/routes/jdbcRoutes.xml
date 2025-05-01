@@ -9,7 +9,42 @@
         http://camel.apache.org/schema/spring/camel-spring.xsd">
     <camel:routeContext id="jdbcRoutes">
         <camel:route>
-            <camel:from uri="undertow:{{undertow.http}}/getArtist"/>
+            <camel:from uri="undertow:{{undertow.http}}/artist"/>
+            <camel:choice>
+                <camel:when>
+                    <camel:simple>${header.CamelHttpMethod} == 'GET'</camel:simple>
+                    <camel:to uri="direct:getArtist"/>
+                </camel:when>
+                <camel:when>
+                    <camel:simple>${header.CamelHttpMethod} == 'POST'</camel:simple>
+                    <camel:to uri="direct:createArtist"/>
+                </camel:when>
+                <camel:otherwise>
+                    <camel:to uri="direct:errorHandler"/>
+                </camel:otherwise>
+            </camel:choice>
+        </camel:route>
+        <camel:route>
+            <camel:from uri="direct:createArtist"/>
+            <camel:unmarshal>
+                <camel:json library="Jackson"/>
+            </camel:unmarshal>
+            <camel:process ref="artistQueryProcessor"/>
+            <camel:to uri="jdbc:dataSource"/>
+            <camel:filter>
+                <camel:simple>${header.CamelJdbcUpdateCount} != 1</camel:simple>
+                <camel:to uri="direct:errorHandler"/>
+                <camel:stop/>
+            </camel:filter>
+            <camel:setHeader name="CamelHttpResponseCode">
+                <camel:constant>201</camel:constant>
+            </camel:setHeader>
+            <camel:setBody>
+                <camel:constant>New record successfully added</camel:constant>
+            </camel:setBody>
+        </camel:route>
+        <camel:route>
+            <camel:from uri="direct:getArtist"/>
             <camel:setBody>
                 <camel:simple>SELECT * FROM public.artists</camel:simple>
             </camel:setBody>
@@ -18,6 +53,16 @@
                 <camel:json library="Jackson"/>
             </camel:marshal>
             <camel:log message="Result: ${body}"/>
+        </camel:route>
+        <camel:route>
+            <camel:from uri="direct:errorHandler"/>
+            <camel:log message="HTTP method ${header.CamelHttpMethod} is not maintained"/>
+            <camel:setHeader name="CamelHttpResponseCode">
+                <camel:constant>403</camel:constant>
+            </camel:setHeader>
+            <camel:setBody>
+                <camel:constant>Forbidden: Invalid token</camel:constant>
+            </camel:setBody>
         </camel:route>
     </camel:routeContext>
 </beans>

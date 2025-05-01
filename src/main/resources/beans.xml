@@ -10,6 +10,7 @@
     <bean id="properties" class="org.apache.camel.component.properties.PropertiesComponent">
         <property name="location" value="classpath:additional.properties"/>
     </bean>
+    <bean id="artistQueryProcessor" class="org.learning.camel.bean.ArtistQueryProcessor"/>
     <bean id="reverseProcessor" class="org.learning.camel.bean.ReverseProcessor"/>
     <bean id="dataSource" class="org.apache.commons.dbcp2.BasicDataSource">
         <property name="driverClassName" value="org.postgresql.Driver"/>

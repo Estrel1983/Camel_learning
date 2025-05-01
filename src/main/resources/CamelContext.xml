@@ -8,6 +8,9 @@
         http://camel.apache.org/schema/spring
         http://camel.apache.org/schema/spring/camel-spring.xsd">
     <import resource="beans.xml"/>
+    <import resource="classpath:routes/jdbcRoutes.xml"/>
+    <import resource="classpath:routes/EipRoutes.xml"/>
+    <import resource="classpath:routes/greetingRoutes.xml"/>
     <camel:camelContext id="mainContext">
         <camel:routeContextRef ref="jdbcRoutes"/>
         <camel:routeContextRef ref="eipRoutes"/>
