@@ -7,6 +7,9 @@ import org.apache.camel.model.dataformat.JsonLibrary;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.learning.camel.bean.ArtistQueryProcessor;
 
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.jdbc.support.JdbcTransactionManager;
+
 import javax.sql.DataSource;
 
 public class JdslRouteBuilder extends RouteBuilder {
@@ -17,6 +20,7 @@ public class JdslRouteBuilder extends RouteBuilder {
         jdbcComponent.setDataSource(dataSource);
         getContext().addComponent("jdbc", jdbcComponent);
 
+
         from("undertow:{{undertow.http}}/artist")
                 .choice()
                     .when(header("CamelHttpMethod").isEqualTo("GET"))
@@ -26,6 +30,10 @@ public class JdslRouteBuilder extends RouteBuilder {
                     .otherwise()
                         .to("direct:errorHandler")
                 .end();
+        from("direct:ExceptionEndpoint")
+                .delay(500)
+                .throwException(new Exception());
+
         from("direct:createArtist")
                 .unmarshal().json(JsonLibrary.Jackson)
                 .process(new ArtistQueryProcessor())
