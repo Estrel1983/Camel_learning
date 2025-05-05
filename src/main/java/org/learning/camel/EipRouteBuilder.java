@@ -1,13 +1,121 @@
 package org.learning.camel;
 
-import org.apache.camel.Exchange;
-import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.model.dataformat.JsonLibrary;
 import org.learning.camel.bean.MessageFilterBean;
+import org.learning.camel.bean.aggregator.ListAggregationStrategy;
+import org.learning.camel.bean.aggregator.PojoAggregation;
+import org.learning.camel.bean.aggregator.StringAggregationStrategy;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
 
 public class EipRouteBuilder extends RouteBuilder {
     @Override
     public void configure() throws Exception {
+
+        ExecutorService executor = getCamelContext().getExecutorServiceManager().newFixedThreadPool(this, "myPool", 2);
+        getCamelContext().getRegistry().bind("pojoAggregation", new PojoAggregation());
+        from("undertow:{{undertow.http}}/pojoAggregation")
+                .multicast()
+                .streaming()
+                .aggregationStrategy("pojoAggregation")
+                .aggregationStrategyMethodAllowNull()
+                .aggregationStrategyMethodName("stringAggregation")
+                .to("direct:firstDestination", "direct:secondDestination", "direct:thirdDestination")
+                .end()
+                .log("Result : ${body}");
+        from("undertow:{{undertow.http}}/multicastSharedState")
+                .setBody(constant(new ArrayList<>(List.of("Starting message"))))
+                .multicast()
+                    .onPrepare(e -> {
+                        List<String> original = e.getIn().getBody(List.class);
+                        List<String> cloned = new ArrayList<>(original);
+                        e.getIn().setBody(cloned);
+                    })
+                    .parallelProcessing(true)
+                    .aggregationStrategy(new ListAggregationStrategy())
+                    .to("direct:listChanger", "direct:listChanger", "direct:listChanger")
+                .end()
+                .log("Final Body is: ${body}")
+                .marshal().json(JsonLibrary.Jackson);
+
+        from("undertow:{{undertow.http}}/multicastOnPrepare")
+                .log("Password is - ${header.MyPassword}")
+                .multicast().onPrepare(exchange -> {
+                    exchange.getIn().removeHeader("MyPassword");
+                })
+                        .to("direct:firstDestination", "direct:unsafeDestination", "direct:thirdDestination")
+                .end();
+        from("undertow:{{undertow.http}}/multicastWithException")
+                .multicast()
+                        .stopOnException()
+                        .aggregationStrategy(new StringAggregationStrategy())
+                        .to("direct:firstDestination", "direct:brokenDestination", "direct:thirdDestination")
+                .end()
+                .log("Result : ${body}");
+        from("direct:propertyChanger")
+                .process(e->{e.setProperty("myProperty", "property changed");});
+        from("direct:bodySetter")
+                .delay(100)
+                .process(e->{
+                    String prop = (String) e.getProperty("myProperty");
+                    if(prop != null && prop.equals("property changed"))
+                        e.getIn().setBody("All works");
+                    else
+                        e.getIn().setBody("Nothing works");
+                })
+                .log("We are here");
+        from("direct:listChanger")
+                .process(e -> {
+                    List<String> list = e.getIn().getBody(List.class);
+                    String threadName = Thread.currentThread().getName();
+                    for(int i=0; i<5; i++)
+                        list.add(threadName + " " +i);
+                });
+
+        from("direct:brokenDestination")
+                .throwException(new Exception())
+                .setBody(constant("Broken Body"))
+                .log("This is broken rout");
+        from("undertow:{{undertow.http}}/multicast")
+                .multicast()
+                    .streaming()
+                    .parallelProcessing(true)
+                    .executorService(executor)
+                    .aggregationStrategy(new StringAggregationStrategy())
+                    .to("direct:firstDestination", "direct:secondDestination", "direct:thirdDestination")
+                .end()
+                .log("Result : ${body}");
+        from("undertow:{{undertow.http}}/multicastWithDelay")
+                .multicast()
+                .streaming()
+                .parallelProcessing(true)
+                .timeout(300)
+                .aggregationStrategy(new StringAggregationStrategy())
+                .to("direct:firstDestination", "direct:delayDestination", "direct:thirdDestination")
+                .end()
+                .log("Result : ${body}");
+        from("direct:unsafeDestination")
+                .log("Password is - ${header.MyPassword}");
+        from("direct:firstDestination")
+                .setBody(simple("First Body"))
+                .log("First thread: ${threadName}")
+                .log("This is first route");
+        from("direct:secondDestination")
+                .setBody(simple("Second Body"))
+                .log("Second thread: ${threadName}")
+                .log("This is second route");
+        from("direct:thirdDestination")
+                .setBody(simple("Third Body"))
+                .log("Third thread: ${threadName}")
+                .log("This is third route");
+        from("direct:delayDestination")
+                .setBody(simple("Delay Body"))
+                .delay(600)
+                .log("This is route with delay");
+
         from("undertow:{{undertow.http}}/filtersInRout")
                 .filter(simple("${header.filtered} == 'true'"))
                         .log("Passed the filter.")

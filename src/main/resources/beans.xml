@@ -10,8 +10,16 @@
     <bean id="properties" class="org.apache.camel.component.properties.PropertiesComponent">
         <property name="location" value="classpath:additional.properties"/>
     </bean>
+    <bean id="pojoAggregator" class="org.learning.camel.bean.aggregator.PojoAggregation"/>
+    <bean id="bodySetter" class="org.learning.camel.bean.utils.BodySetter"/>
+    <bean id="prepareListForParallelProcessing" class="org.learning.camel.bean.utils.PrepareListForParallelProcessing "/>
     <bean id="artistQueryProcessor" class="org.learning.camel.bean.ArtistQueryProcessor"/>
     <bean id="reverseProcessor" class="org.learning.camel.bean.ReverseProcessor"/>
+    <bean id="stringAggregationStrategy" class="org.learning.camel.bean.aggregator.StringAggregationStrategy"/>
+    <bean id="listAggregationStrategy" class="org.learning.camel.bean.aggregator.ListAggregationStrategy"/>
+    <bean id="myExecutor" class="java.util.concurrent.Executors" factory-method="newFixedThreadPool">
+        <constructor-arg type="int" value="2"/>
+    </bean>
     <bean id="dataSource" class="org.apache.commons.dbcp2.BasicDataSource">
         <property name="driverClassName" value="org.postgresql.Driver"/>
         <property name="url" value="jdbc:postgresql://localhost:5432/carddb"/>
