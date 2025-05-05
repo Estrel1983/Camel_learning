@@ -9,6 +9,99 @@
         http://camel.apache.org/schema/spring/camel-spring.xsd">
     <camel:routeContext id="eipRoutes">
         <camel:route>
+            <camel:from uri="undertow:{{undertow.http}}/pojoAggregation"/>
+                <camel:multicast aggregationStrategy="pojoAggregator" aggregationStrategyMethodName="stringAggregation">
+                    <camel:to uri="direct:firstDestination"/>
+                    <camel:to uri="direct:secondDestination"/>
+                    <camel:to uri="direct:thirdDestination"/>
+                </camel:multicast>
+            <camel:log message="Result : ${body}"/>
+        </camel:route>
+        <camel:route>
+            <camel:from uri="undertow:{{undertow.http}}/multicastSharedState"/>
+            <camel:setHeader name="forBody">
+                <camel:constant>Starting message</camel:constant>
+            </camel:setHeader>
+            <camel:bean ref="bodySetter" method="setStringAsList"/>
+            <camel:multicast parallelProcessing="true" aggregationStrategy="listAggregationStrategy"
+                             onPrepare="prepareListForParallelProcessing">
+                <camel:to uri="direct:listChanger"/>
+                <camel:to uri="direct:listChanger"/>
+                <camel:to uri="direct:listChanger"/>
+            </camel:multicast>
+            <camel:log message="Final Body is: ${body}"/>
+            <camel:marshal>
+                <camel:json library="Jackson"/>
+            </camel:marshal>
+        </camel:route>
+        <camel:route>
+            <camel:from uri="direct:listChanger"/>
+            <camel:bean ref="bodySetter" method="setStringWithThreadAsList"/>
+        </camel:route>
+        <camel:route>
+            <camel:from uri="undertow:{{undertow.http}}/multicast"/>
+            <camel:multicast streaming="true" parallelProcessing="true" executorService="myExecutor"
+                             aggregationStrategy="stringAggregationStrategy">
+                <camel:to uri="direct:firstDestination"/>
+                <camel:to uri="direct:secondDestination"/>
+                <camel:to uri="direct:thirdDestination"/>
+            </camel:multicast>
+            <camel:log message="Result : ${body}"/>
+        </camel:route>
+        <camel:route>
+            <camel:from uri="undertow:{{undertow.http}}/multicastWithException"/>
+            <camel:multicast stopOnException="true" aggregationStrategy="stringAggregationStrategy">
+                <camel:to uri="direct:firstDestination"/>
+                <camel:to uri="direct:brokenDestination"/>
+                <camel:to uri="direct:thirdDestination"/>
+            </camel:multicast>
+        </camel:route>
+        <camel:route>
+            <camel:from uri="undertow:{{undertow.http}}/multicastWithDelay"/>
+            <camel:multicast parallelProcessing="true" streaming="true" aggregationStrategy="stringAggregationStrategy"
+                             timeout="300">
+                <camel:to uri="direct:firstDestination"/>
+                <camel:to uri="direct:delayDestination"/>
+                <camel:to uri="direct:thirdDestination"/>
+            </camel:multicast>
+            <camel:log message="Result : ${body}"/>
+        </camel:route>
+        <camel:route>
+            <camel:from uri="direct:delayDestination"/>
+            <camel:delay>
+                <camel:constant>600</camel:constant>
+            </camel:delay>
+            <camel:log message="This is route with delay"/>
+            <camel:setBody>
+                <camel:constant>Delay Body</camel:constant>
+            </camel:setBody>
+        </camel:route>
+        <camel:route>
+            <camel:from uri="direct:brokenDestination"/>
+            <camel:throwException exceptionType="java.lang.Exception"/>
+        </camel:route>
+        <camel:route>
+            <camel:from uri="direct:firstDestination"/>
+            <camel:setBody>
+                <camel:constant>First Body</camel:constant>
+            </camel:setBody>
+            <camel:log message="First thread: ${threadName}"/>
+        </camel:route>
+        <camel:route>
+            <camel:from uri="direct:secondDestination"/>
+            <camel:setBody>
+                <camel:constant>Second Body</camel:constant>
+            </camel:setBody>
+            <camel:log message="Second thread: ${threadName}"/>
+        </camel:route>
+        <camel:route>
+            <camel:from uri="direct:thirdDestination"/>
+            <camel:setBody>
+                <camel:constant>Third Body</camel:constant>
+            </camel:setBody>
+            <camel:log message="Third thread: ${threadName}"/>
+        </camel:route>
+        <camel:route>
             <camel:from uri="undertow:{{undertow.http}}/filtersInRout"/>
             <camel:filter>
                 <camel:simple>${header.filtered} == 'true'</camel:simple>

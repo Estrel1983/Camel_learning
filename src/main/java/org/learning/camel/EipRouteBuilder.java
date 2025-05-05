@@ -4,6 +4,7 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.dataformat.JsonLibrary;
 import org.learning.camel.bean.MessageFilterBean;
 import org.learning.camel.bean.aggregator.ListAggregationStrategy;
+import org.learning.camel.bean.aggregator.PojoAggregation;
 import org.learning.camel.bean.aggregator.StringAggregationStrategy;
 
 import java.util.ArrayList;
@@ -15,6 +16,16 @@ public class EipRouteBuilder extends RouteBuilder {
     public void configure() throws Exception {
 
         ExecutorService executor = getCamelContext().getExecutorServiceManager().newFixedThreadPool(this, "myPool", 2);
+        getCamelContext().getRegistry().bind("pojoAggregation", new PojoAggregation());
+        from("undertow:{{undertow.http}}/pojoAggregation")
+                .multicast()
+                .streaming()
+                .aggregationStrategy("pojoAggregation")
+                .aggregationStrategyMethodAllowNull()
+                .aggregationStrategyMethodName("stringAggregation")
+                .to("direct:firstDestination", "direct:secondDestination", "direct:thirdDestination")
+                .end()
+                .log("Result : ${body}");
         from("undertow:{{undertow.http}}/multicastSharedState")
                 .setBody(constant(new ArrayList<>(List.of("Starting message"))))
                 .multicast()
@@ -73,7 +84,7 @@ public class EipRouteBuilder extends RouteBuilder {
                     .streaming()
                     .parallelProcessing(true)
                     .executorService(executor)
-                    .aggregationStrategyMethodName("stringAggregationStrategy")
+                    .aggregationStrategy(new StringAggregationStrategy())
                     .to("direct:firstDestination", "direct:secondDestination", "direct:thirdDestination")
                 .end()
                 .log("Result : ${body}");

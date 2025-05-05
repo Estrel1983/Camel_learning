@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:camel="http://camel.apache.org/schema/spring"
+       xsi:schemaLocation="
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://camel.apache.org/schema/spring
+        http://camel.apache.org/schema/spring/camel-spring.xsd">
+    <import resource="beans.xml"/>
+    <camel:camelContext id="tmpContext">
+        <camel:threadPoolProfile id="myThreadPool" poolSize="2" maxPoolSize="2"/>
+        <camel:route>
+        <camel:from uri="undertow:http://localhost:8082/multicast"/>
+        <camel:multicast streaming="true" parallelProcessing="true" executorService="myThreadPool"
+                         aggregationStrategy="stringAggregationStrategy">
+            <camel:to uri="direct:firstDestination"/>
+            <camel:to uri="direct:secondDestination"/>
+            <camel:to uri="direct:thirdDestination"/>
+        </camel:multicast>
+        <camel:log message="Result : ${body}"/>
+    </camel:route>
+    <camel:route>
+        <camel:from uri="direct:firstDestination"/>
+        <camel:setBody>
+            <camel:constant>First Body</camel:constant>
+        </camel:setBody>
+        <camel:log message="First thread: ${threadName}"/>
+    </camel:route>
+    <camel:route>
+        <camel:from uri="direct:secondDestination"/>
+        <camel:setBody>
+            <camel:constant>Second Body</camel:constant>
+        </camel:setBody>
+        <camel:log message="Second thread: ${threadName}"/>
+    </camel:route>
+    <camel:route>
+        <camel:from uri="direct:thirdDestination"/>
+        <camel:setBody>
+            <camel:constant>Third Body</camel:constant>
+        </camel:setBody>
+        <camel:log message="Third thread: ${threadName}"/>
+    </camel:route>
+    </camel:camelContext>
+</beans>
