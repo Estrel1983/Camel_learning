@@ -1,6 +1,7 @@
 package org.learning.camel;
 
 import org.apache.camel.Exchange;
+import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.dataformat.JsonLibrary;
 import org.apache.camel.support.ExpressionAdapter;
@@ -23,6 +24,14 @@ public class EipRouteBuilder extends RouteBuilder {
         getCamelContext().getRegistry().bind("stringAggregationStrategy", new StringAggregationStrategy());
         ArrayList<String> recList = new ArrayList<>(List.of("direct:firstDestination", "direct:secondDestination", "direct:thirdDestination"));
 
+        from("undertow:{{undertow.http}}/wireTap")
+                .setBody(constant("before"))
+                .wireTap("direct:wireTap")
+                .to("direct:onlyLog");
+        from("direct:wireTap")
+                .log("WireTap body - ${body}");
+        from("direct:onlyLog")
+                .log("Body - ${body}");
         from("undertow:{{undertow.http}}/recipientListAnnotatedWithCash")
                 .recipientList(new ExpressionAdapter() {
                     @Override
