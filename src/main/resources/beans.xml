@@ -20,6 +20,7 @@
     <bean id="myExecutor" class="java.util.concurrent.Executors" factory-method="newFixedThreadPool">
         <constructor-arg type="int" value="2"/>
     </bean>
+    <bean id="recipientListResolver" class="org.learning.camel.bean.utils.RecipientListResolver"/>
     <bean id="dataSource" class="org.apache.commons.dbcp2.BasicDataSource">
         <property name="driverClassName" value="org.postgresql.Driver"/>
         <property name="url" value="jdbc:postgresql://localhost:5432/carddb"/>
