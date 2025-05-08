@@ -10,7 +10,7 @@ public class StringAggregationStrategy implements AggregationStrategy {
             return newExchange;
         String oldBody = oldExchange.getIn().getBody(String.class);
         String newBody = newExchange.getIn().getBody(String.class);
-        String mergedBody = oldBody + ' ' + newBody;
+        String mergedBody = oldBody + " " + newBody;
         oldExchange.getIn().setBody(mergedBody);
         return oldExchange;
     }

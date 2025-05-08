@@ -1,11 +1,14 @@
 package org.learning.camel;
 
+import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.dataformat.JsonLibrary;
+import org.apache.camel.support.ExpressionAdapter;
 import org.learning.camel.bean.MessageFilterBean;
 import org.learning.camel.bean.aggregator.ListAggregationStrategy;
 import org.learning.camel.bean.aggregator.PojoAggregation;
 import org.learning.camel.bean.aggregator.StringAggregationStrategy;
+import org.learning.camel.bean.utils.RecipientListResolver;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,6 +20,37 @@ public class EipRouteBuilder extends RouteBuilder {
 
         ExecutorService executor = getCamelContext().getExecutorServiceManager().newFixedThreadPool(this, "myPool", 2);
         getCamelContext().getRegistry().bind("pojoAggregation", new PojoAggregation());
+        getCamelContext().getRegistry().bind("stringAggregationStrategy", new StringAggregationStrategy());
+        ArrayList<String> recList = new ArrayList<>(List.of("direct:firstDestination", "direct:secondDestination", "direct:thirdDestination"));
+
+        from("undertow:{{undertow.http}}/recipientListAnnotatedWithCash")
+                .recipientList(new ExpressionAdapter() {
+                    @Override
+                    public Object evaluate(Exchange exchange) {
+                        List<String> recipients = new ArrayList<>();
+                        for(int i=0; i<10; i++){
+                            recipients.add("direct:cash"+i);
+                        }
+                        return recipients;
+                    }
+                }).cacheSize(-1).parallelProcessing();
+        from("direct:cash0").log("0");
+        from("direct:cash1").log("1");
+        from("direct:cash2").log("2");
+        from("direct:cash3").log("3");
+        from("direct:cash4").log("4");
+        from("direct:cash5").log("5");
+        from("direct:cash6").log("6");
+        from("direct:cash7").log("7");
+        from("direct:cash8").log("8");
+        from("direct:cash9").log("9");
+        from("undertow:{{undertow.http}}/recipientListAnnotated")
+                .bean(new RecipientListResolver())
+                .log("Result : ${body}");
+        from("undertow:{{undertow.http}}/recipientList")
+                .recipientList().method(RecipientListResolver.class,"getRecipientList")
+                .aggregationStrategy(new StringAggregationStrategy())
+                .log("Result : ${body}");
         from("undertow:{{undertow.http}}/pojoAggregation")
                 .multicast()
                 .streaming()

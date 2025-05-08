@@ -8,6 +8,18 @@
         http://camel.apache.org/schema/spring
         http://camel.apache.org/schema/spring/camel-spring.xsd">
     <camel:routeContext id="eipRoutes">
+<!--        <camel:route>-->
+<!--            <camel:from uri="undertow:{{undertow.http}}/recipientList"/>-->
+<!--            <camel:recipientList aggregationStrategy="stringAggregationStrategy">-->
+<!--                <camel:method ref="recipientListResolver" method="getRecipientList"/>-->
+<!--            </camel:recipientList>-->
+<!--            <camel:log message="Result : ${body}"/>-->
+<!--        </camel:route>-->
+        <camel:route>
+            <camel:from uri="undertow:{{undertow.http}}/recipientListAnnotated"/>
+            <camel:bean ref="recipientListResolver"/>
+            <camel:log message="Result : ${body}"/>
+        </camel:route>
         <camel:route>
             <camel:from uri="undertow:{{undertow.http}}/pojoAggregation"/>
                 <camel:multicast aggregationStrategy="pojoAggregator" aggregationStrategyMethodName="stringAggregation">
