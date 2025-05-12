@@ -13,7 +13,7 @@ public final class MyApplication {
 
     public static void main(String[] args) throws Exception {
         Main main = new Main(MyApplication.class);
-        main.setPropertyPlaceholderLocations("classpath:additional.properties");
+        main.setPropertyPlaceholderLocations("classpath:additional.properties,classpath:mail.properties");
         main.run(args);
     }
 //    public static void main(String[] args) throws Exception {

@@ -6,3 +6,4 @@
 
 /target/
 data/outbox
+src/main/resources/mail.properties
