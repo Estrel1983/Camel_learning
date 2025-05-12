@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:camel="http://camel.apache.org/schema/spring"
+       xsi:schemaLocation="
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://camel.apache.org/schema/spring
+        http://camel.apache.org/schema/spring/camel-spring.xsd">
+    <camel:routeContext id="emailRoutes">
+        <camel:route>
+          <camel:from uri="imaps://{{mail.host}}:{{mail.port}}?username={{mail.username}}&amp;password={{mail.password}}&amp;delete=false&amp;unseen=true&amp;folderName=Camel&amp;delay=600000"/>
+          <camel:log message="Successful receiving"/>
+          <camel:filter>
+              <camel:method ref="messageFilterBean" method="emailFilter"/>
+              <camel:log message="${body}"/>
+          </camel:filter>
+          <camel:setBody>
+              <camel:constant>New Body</camel:constant>
+          </camel:setBody>
+          <camel:to uri="direct:emailSender"/>
+        </camel:route>
+        <camel:route>
+            <camel:from uri="direct:emailSender"/>
+            <camel:setHeader name="Subject">
+                <camel:constant>Body Transformation</camel:constant>
+            </camel:setHeader>
+            <camel:setHeader name="To">
+                <camel:constant>shmyrovyury@gmail.com</camel:constant>
+            </camel:setHeader>
+            <camel:setHeader name="From">
+                <camel:constant>{{mail.username}}</camel:constant>
+            </camel:setHeader>
+            <camel:to uri="smtps:{{mail.smtps.host}}:{{mail.smtps.port}}?username={{mail.username}}&amp;password={{mail.password}}"/>
+        </camel:route>
+    </camel:routeContext>
+</beans>

@@ -1,0 +1,6 @@
+mail.username=your_email@gmail.com
+mail.password=REPLACE_ME
+mail.host=imap.gmail.com
+mail.port=993
+mail.smtps.host=smtp.gmail.com
+mail.smtps.port=465
