@@ -37,5 +37,4 @@ public class MessageFilterBean {
             return false;
         }
     }
-
 }

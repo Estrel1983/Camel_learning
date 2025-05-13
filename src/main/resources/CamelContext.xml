@@ -12,10 +12,12 @@
     <import resource="classpath:routes/EipRoutes.xml"/>
     <import resource="classpath:routes/greetingRoutes.xml"/>
     <import resource="classpath:routes/EmailRoutes.xml"/>
+    <import resource="classpath:routes/DataTransformationRoutes.xml"/>
     <camel:camelContext id="mainContext">
         <camel:routeContextRef ref="jdbcRoutes"/>
         <camel:routeContextRef ref="eipRoutes"/>
         <camel:routeContextRef ref="greetingRoutes"/>
         <camel:routeContextRef ref="emailRoutes"/>
+        <camel:routeContextRef ref="dataTransformationRoutes"/>
     </camel:camelContext>
 </beans>
