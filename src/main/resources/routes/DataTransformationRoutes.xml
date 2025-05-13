@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:camel="http://camel.apache.org/schema/spring"
+       xsi:schemaLocation="
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://camel.apache.org/schema/spring
+        http://camel.apache.org/schema/spring/camel-spring.xsd">
+    <camel:routeContext id="dataTransformationRoutes">
+        <camel:route>
+          <camel:from uri="undertow:{{undertow.http}}/transformation/processor"/>
+          <camel:process ref="simpleTransformationProcessor"/>
+        </camel:route>
+        <camel:route>
+            <camel:from uri="undertow:{{undertow.http}}/transformation/bean"/>
+            <camel:bean ref="simpleTransformationBean" method="mapStringToString"/>
+        </camel:route>
+        <camel:route>
+            <camel:from uri="undertow:{{undertow.http}}/transformation/transform"/>
+            <camel:convertBodyTo type="java.lang.String"/>
+            <camel:transform>
+                <camel:simple>${body.replace(',', '\n')}</camel:simple>
+            </camel:transform>
+        </camel:route>
+    </camel:routeContext>
+</beans>
