@@ -15,6 +15,7 @@
             </list>
         </property>
     </bean>
+    <bean id="emailAggregator" class="org.learning.camel.bean.aggregator.EmailBodyAggregationStrategy"/>
     <bean id="simpleTransformationProcessor" class="org.learning.camel.bean.transformer.SimpleTransformingProcessor"/>
     <bean id="simpleTransformationBean" class="org.learning.camel.bean.transformer.SimpleTransformingBean"/>
     <bean id="pojoAggregator" class="org.learning.camel.bean.aggregator.PojoAggregation"/>
@@ -23,6 +24,7 @@
     <bean id="artistQueryProcessor" class="org.learning.camel.bean.ArtistQueryProcessor"/>
     <bean id="reverseProcessor" class="org.learning.camel.bean.ReverseProcessor"/>
     <bean id="stringAggregationStrategy" class="org.learning.camel.bean.aggregator.StringAggregationStrategy"/>
+    <bean id="artistAggregation" class="org.learning.camel.bean.aggregator.ArtistAggregation"/>
     <bean id="listAggregationStrategy" class="org.learning.camel.bean.aggregator.ListAggregationStrategy"/>
     <bean id="myExecutor" class="java.util.concurrent.Executors" factory-method="newFixedThreadPool">
         <constructor-arg type="int" value="2"/>

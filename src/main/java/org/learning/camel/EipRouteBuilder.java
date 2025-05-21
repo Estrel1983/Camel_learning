@@ -6,9 +6,7 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.dataformat.JsonLibrary;
 import org.apache.camel.support.ExpressionAdapter;
 import org.learning.camel.bean.MessageFilterBean;
-import org.learning.camel.bean.aggregator.ListAggregationStrategy;
-import org.learning.camel.bean.aggregator.PojoAggregation;
-import org.learning.camel.bean.aggregator.StringAggregationStrategy;
+import org.learning.camel.bean.aggregator.*;
 import org.learning.camel.bean.utils.RecipientListResolver;
 
 import java.util.ArrayList;
@@ -24,6 +22,13 @@ public class EipRouteBuilder extends RouteBuilder {
         getCamelContext().getRegistry().bind("stringAggregationStrategy", new StringAggregationStrategy());
         ArrayList<String> recList = new ArrayList<>(List.of("direct:firstDestination", "direct:secondDestination", "direct:thirdDestination"));
 
+        from("undertow:{{undertow.http}}/pollEnricher")
+                .pollEnrich("imaps://{{mail.host}}:{{mail.port}}?username={{mail.username}}&password={{mail.password}}&delete=false&unseen=true&folderName=Camel",
+                        new EmailBodyAggregationStrategy());
+        from("undertow:{{undertow.http}}/isArtistExistsEnricher")
+                .unmarshal().json(JsonLibrary.Jackson)
+                        .enrich().constant("direct:getArtist").aggregationStrategy(new ArtistAggregation())
+                        .marshal().json(JsonLibrary.Jackson);
         from("undertow:{{undertow.http}}/wireTap")
                 .setBody(constant("before"))
                 .wireTap("direct:wireTap")
