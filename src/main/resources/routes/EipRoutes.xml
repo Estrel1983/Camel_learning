@@ -8,6 +8,24 @@
         http://camel.apache.org/schema/spring
         http://camel.apache.org/schema/spring/camel-spring.xsd">
     <camel:routeContext id="eipRoutes">
+        <camel:route>
+            <camel:from uri="undertow:{{undertow.http}}/pollEnricher"/>
+            <camel:pollEnrich timeout="0" aggregationStrategy="emailAggregator">
+                <camel:constant>imaps://{{mail.host}}:{{mail.port}}?username={{mail.username}}&amp;password={{mail.password}}&amp;delete=false&amp;unseen=true&amp;folderName=Camel</camel:constant>
+            </camel:pollEnrich>
+        </camel:route>
+        <camel:route>
+            <camel:from uri="undertow:{{undertow.http}}/isArtistExistsEnricher"/>
+            <camel:unmarshal>
+                <camel:json library="Jackson"/>
+            </camel:unmarshal>
+            <camel:enrich aggregationStrategy="artistAggregation" aggregateOnException="true">
+                <camel:constant>direct:getArtist</camel:constant>
+            </camel:enrich>
+            <camel:marshal>
+                <camel:json library="Jackson"/>
+            </camel:marshal>
+        </camel:route>
 <!--        <camel:route>-->
 <!--            <camel:from uri="undertow:{{undertow.http}}/recipientList"/>-->
 <!--            <camel:recipientList aggregationStrategy="stringAggregationStrategy">-->
@@ -22,7 +40,7 @@
         </camel:route>
         <camel:route>
             <camel:from uri="undertow:{{undertow.http}}/pojoAggregation"/>
-                <camel:multicast aggregationStrategy="pojoAggregator" aggregationStrategyMethodName="stringAggregation">
+                <camel:multicast aggregationStrategy="pojoAggregator">
                     <camel:to uri="direct:firstDestination"/>
                     <camel:to uri="direct:secondDestination"/>
                     <camel:to uri="direct:thirdDestination"/>

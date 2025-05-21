@@ -3,20 +3,18 @@ package org.learning.camel.bean.aggregator;
 import org.apache.camel.AggregationStrategy;
 import org.apache.camel.Exchange;
 
+import java.nio.charset.StandardCharsets;
+
 public class EmailBodyAggregationStrategy implements AggregationStrategy {
     @Override
     public Exchange aggregate(Exchange oldExchange, Exchange newExchange) {
-        if (oldExchange == null) {
-            newExchange.setProperty("curNumber", 1);
-            String result = "Letter #1 with text: " + newExchange.getIn().getBody() + "\n";
-            newExchange.getIn().setBody(result);
-            return newExchange;
+        byte[] oldBody = oldExchange.getIn().getBody(byte[].class);
+        String request = new String(oldBody, StandardCharsets.UTF_8);
+        if (newExchange == null) {
+            oldExchange.getIn().setBody(request + "\n - There aren't new emails");
+            return oldExchange;
         }
-        String firstLetter = oldExchange.getIn().getBody(String.class);
-        String secondLetter = "Letter #" + (Integer.parseInt((String) oldExchange.getProperty("curNumber")) + 1) + " with text: "
-                + newExchange.getIn().getBody() + "\n";
-        String result = firstLetter + secondLetter;
-        oldExchange.getIn().setBody(result);
+        oldExchange.getIn().setBody(request + "\nReceived email from:\n" + newExchange.getIn().getHeader("From"));
         return oldExchange;
     }
 }
