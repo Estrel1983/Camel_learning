@@ -9,6 +9,19 @@
         http://camel.apache.org/schema/spring/camel-spring.xsd">
     <camel:routeContext id="dataTransformationRoutes">
         <camel:route>
+            <camel:from uri="undertow:{{undertow.http}}/transformation/multiJsonToPojo"/>
+            <camel:unmarshal>
+                <camel:json library="Jackson" unmarshalType="org.learning.camel.entity.MtgCard" useList="true"/>
+            </camel:unmarshal>
+        </camel:route>
+        <camel:route>
+            <camel:from uri="undertow:{{undertow.http}}/transformation/jsonToPojo"/>
+            <camel:unmarshal>
+                <camel:json library="Jackson" unmarshalType="org.learning.camel.entity.MtgCard"/>
+            </camel:unmarshal>
+            <camel:bean ref="mtgCardProcessor"/>
+        </camel:route>
+        <camel:route>
           <camel:from uri="undertow:{{undertow.http}}/transformation/processor"/>
           <camel:process ref="simpleTransformationProcessor"/>
         </camel:route>

@@ -23,7 +23,7 @@
                 <camel:constant>direct:getArtist</camel:constant>
             </camel:enrich>
             <camel:marshal>
-                <camel:json library="Jackson"/>
+                <camel:jacksonXml/>
             </camel:marshal>
         </camel:route>
 <!--        <camel:route>-->
