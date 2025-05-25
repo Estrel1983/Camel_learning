@@ -3,14 +3,29 @@ package org.learning.camel;
 import org.apache.camel.Exchange;
 import org.apache.camel.Expression;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.model.dataformat.JsonDataFormat;
+import org.apache.camel.model.dataformat.JsonLibrary;
+import org.learning.camel.bean.MtgProcessor;
+import org.learning.camel.bean.aggregator.StringAggregationStrategy;
 import org.learning.camel.bean.transformer.SimpleTransformingBean;
 import org.learning.camel.bean.transformer.SimpleTransformingProcessor;
+import org.learning.camel.entity.MtgCard;
 
 import java.util.Arrays;
 
 public class DataTransformationRouteBuilder extends RouteBuilder {
     @Override
     public void configure() throws Exception {
+        JsonDataFormat myJson = new JsonDataFormat(JsonLibrary.Jackson);
+        myJson.setUseList("true");
+        myJson.setUnmarshalType(MtgCard.class);
+        from("undertow:{{undertow.http}}/transformation/jsonToPojo")
+                .unmarshal().json(JsonLibrary.Jackson, MtgCard.class)
+                .process(new MtgProcessor());
+        from("undertow:{{undertow.http}}/transformation/multiJsonToPojo")
+                .unmarshal(myJson)
+                .split(simple("${body}")).aggregationStrategy(new StringAggregationStrategy())
+                    .process(new MtgProcessor());
         from("undertow:{{undertow.http}}/transformation/processor")
                 .process(new SimpleTransformingProcessor());
         from("undertow:{{undertow.http}}/transformation/bean")

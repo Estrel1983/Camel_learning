@@ -15,6 +15,7 @@
             </list>
         </property>
     </bean>
+    <bean id="mtgCardProcessor" class=" org.learning.camel.bean.MtgProcessor"/>
     <bean id="emailAggregator" class="org.learning.camel.bean.aggregator.EmailBodyAggregationStrategy"/>
     <bean id="simpleTransformationProcessor" class="org.learning.camel.bean.transformer.SimpleTransformingProcessor"/>
     <bean id="simpleTransformationBean" class="org.learning.camel.bean.transformer.SimpleTransformingBean"/>
