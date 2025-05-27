@@ -9,6 +9,18 @@
         http://camel.apache.org/schema/spring/camel-spring.xsd">
     <camel:routeContext id="jdbcRoutes">
         <camel:route>
+            <camel:from uri="undertow:{{undertow.http}}/card"/>
+            <camel:choice>
+                <camel:when>
+                    <camel:simple>${header.CamelHttpMethod} == 'GET'</camel:simple>
+                    <camel:to uri="direct:getCard"/>
+                </camel:when>
+                <camel:otherwise>
+                    <camel:to uri="direct:errorHandler"/>
+                </camel:otherwise>
+            </camel:choice>
+        </camel:route>
+        <camel:route>
             <camel:from uri="undertow:{{undertow.http}}/artist"/>
             <camel:choice>
                 <camel:when>
@@ -23,6 +35,26 @@
                     <camel:to uri="direct:errorHandler"/>
                 </camel:otherwise>
             </camel:choice>
+        </camel:route>
+        <camel:route>
+            <camel:from uri="direct:getCard"/>
+            <camel:choice>
+                <camel:when>
+                    <camel:simple>${header.id} != null</camel:simple>
+                    <camel:setBody>
+                        <camel:constant>SELECT * FROM public.cards WHERE id = ${headers.id}</camel:constant>
+                    </camel:setBody>
+                </camel:when>
+                <camel:otherwise>
+                    <camel:setBody>
+                        <camel:constant>SELECT * FROM public.cards</camel:constant>
+                    </camel:setBody>
+                </camel:otherwise>
+            </camel:choice>
+            <camel:to uri="jdbc:dataSource"/>
+            <camel:marshal>
+                <camel:json library="Jackson"/>
+            </camel:marshal>
         </camel:route>
         <camel:route>
             <camel:from uri="direct:createArtist"/>

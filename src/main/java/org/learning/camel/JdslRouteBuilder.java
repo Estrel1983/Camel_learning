@@ -20,7 +20,12 @@ public class JdslRouteBuilder extends RouteBuilder {
         jdbcComponent.setDataSource(dataSource);
         getContext().addComponent("jdbc", jdbcComponent);
 
-
+        from("undertow:{{undertow.http}}/card")
+                .choice()
+                    .when(header("CamelHttpMethod").isEqualTo("GET"))
+                        .to("direct:getCard")
+                    .otherwise()
+                        .to("direct:errorHandler");
         from("undertow:{{undertow.http}}/artist")
                 .choice()
                     .when(header("CamelHttpMethod").isEqualTo("GET"))
@@ -30,6 +35,16 @@ public class JdslRouteBuilder extends RouteBuilder {
                     .otherwise()
                         .to("direct:errorHandler")
                 .end();
+        from("direct:getCard")
+                .choice()
+                    .when(header("id").isNotNull())
+                        .setBody().constant("SELECT * FROM public.cards WHERE id = ${headers.id}")
+                    .endChoice()
+                    .otherwise()
+                        .setBody().constant("SELECT * FROM public.cards")
+                .end()
+                .to("jdbc:dataSource")
+                .marshal().json(JsonLibrary.Jackson);
         from("direct:ExceptionEndpoint")
                 .delay(500)
                 .throwException(new Exception());

@@ -1,29 +1,19 @@
 package org.learning.camel.entity;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+@Data
 public class MtgCard {
     private Integer id;
+    @JsonProperty("card_name")
     private String cardName;
+    @JsonProperty("artist")
     private Integer artistID;
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public String getCardName() {
-        return cardName;
-    }
-
-    public void setCardName(String cardName) {
-        this.cardName = cardName;
-    }
-
-    public Integer getArtistID() {
-        return artistID;
-    }
-
-    public void setArtistID(Integer artistID) {
-        this.artistID = artistID;
-    }
+    @JsonProperty("set_name")
+    private Integer setId;
+    @JsonProperty("foil")
+    private Boolean foil;
+    @JsonProperty("link_to_image")
+    private String linkToImage;
 }

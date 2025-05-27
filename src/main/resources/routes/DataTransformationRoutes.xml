@@ -9,6 +9,17 @@
         http://camel.apache.org/schema/spring/camel-spring.xsd">
     <camel:routeContext id="dataTransformationRoutes">
         <camel:route>
+            <camel:from uri="undertow:{{undertow.http}}/transformation/template"/>
+            <camel:to uri="direct:getCard"/>
+            <camel:unmarshal>
+                <camel:json library="Jackson" unmarshalType="org.learning.camel.entity.MtgCard" useList="true"/>
+            </camel:unmarshal>
+            <camel:split aggregationStrategy="stringAggregationStrategy">
+                <camel:simple>${body}</camel:simple>
+                <camel:to uri="mustache:templates/cardInfo.mustache"/>
+            </camel:split>
+        </camel:route>
+        <camel:route>
             <camel:from uri="undertow:{{undertow.http}}/transformation/multiJsonToPojo"/>
             <camel:unmarshal>
                 <camel:json library="Jackson" unmarshalType="org.learning.camel.entity.MtgCard" useList="true"/>
