@@ -19,6 +19,11 @@ public class DataTransformationRouteBuilder extends RouteBuilder {
         JsonDataFormat myJson = new JsonDataFormat(JsonLibrary.Jackson);
         myJson.setUseList("true");
         myJson.setUnmarshalType(MtgCard.class);
+        from("undertow:{{undertow.http}}/transformation/template")
+                .to("direct:getCard")
+                .unmarshal(myJson)
+                .split(body()).aggregationStrategy(new StringAggregationStrategy())
+                .to("mustache:templates/cardInfo.mustache");
         from("undertow:{{undertow.http}}/transformation/jsonToPojo")
                 .unmarshal().json(JsonLibrary.Jackson, MtgCard.class)
                 .process(new MtgProcessor());
