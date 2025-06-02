@@ -1,7 +1,6 @@
 package org.learning.camel.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 @Data
 public class MtgCard {

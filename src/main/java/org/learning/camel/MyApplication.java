@@ -1,6 +1,9 @@
 package org.learning.camel;
 
 import org.apache.camel.main.Main;
+import org.apache.camel.spi.TypeConverterRegistry;
+import org.apache.camel.spring.SpringCamelContext;
+import org.learning.camel.bean.converter.CardConverter;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
@@ -19,8 +22,11 @@ public final class MyApplication {
     public static void main(String[] args) throws Exception {
         ClassPathXmlApplicationContext context =
                 new ClassPathXmlApplicationContext("CamelContext.xml");
+        SpringCamelContext scc = context.getBean(SpringCamelContext.class);
+        TypeConverterRegistry registry = scc.getTypeConverterRegistry();
+        registry.addTypeConverters(new CardConverter());
         context.registerShutdownHook();
-        System.out.println("Application started. Press Ctrl+C");;
+        System.out.println("Application started. Press Ctrl+C");
     }
 //    public static void main(String[] args) throws Exception {
 //        CamelContext context = new DefaultCamelContext();

@@ -2,6 +2,7 @@ package org.learning.camel;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Expression;
+import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.dataformat.JsonDataFormat;
 import org.apache.camel.model.dataformat.JsonLibrary;
@@ -19,6 +20,15 @@ public class DataTransformationRouteBuilder extends RouteBuilder {
         JsonDataFormat myJson = new JsonDataFormat(JsonLibrary.Jackson);
         myJson.setUseList("true");
         myJson.setUnmarshalType(MtgCard.class);
+        from("undertow:{{undertow.http}}/transformation/typeConverter")
+              .convertBodyTo(String.class)
+                .process(new Processor() {
+                    @Override
+                    public void process(Exchange exchange) throws Exception {
+                        Object obj = exchange.getIn().getBody();
+                        exchange.getIn().setBody(obj.getClass().getName());
+                }})
+                .log("${body}");
         from("undertow:{{undertow.http}}/transformation/template")
                 .to("direct:getCard")
                 .unmarshal(myJson)

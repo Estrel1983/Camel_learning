@@ -15,6 +15,10 @@
                     <camel:simple>${header.CamelHttpMethod} == 'GET'</camel:simple>
                     <camel:to uri="direct:getCard"/>
                 </camel:when>
+                <camel:when>
+                    <camel:simple>${header.CamelHttpMethod} == 'POST'</camel:simple>
+                    <camel:to uri="direct:addCard"/>
+                </camel:when>
                 <camel:otherwise>
                     <camel:to uri="direct:errorHandler"/>
                 </camel:otherwise>
@@ -37,6 +41,25 @@
             </camel:choice>
         </camel:route>
         <camel:route>
+            <camel:from uri="direct:addCard"/>
+            <camel:convertBodyTo type="org.learning.camel.entity.MtgCardInsertRequest"/>
+            <camel:setHeader name="artist_name">
+                <camel:simple>${body.artistName}</camel:simple>
+            </camel:setHeader>
+            <camel:setHeader name="setName">
+                <camel:simple>${body.setName}</camel:simple>
+            </camel:setHeader>
+            <camel:enrich aggregationStrategy="cardInsertAggregation" aggregationStrategyMethodName="aggregateCardAndArtist">
+                <camel:constant>direct:getArtistByName</camel:constant>
+            </camel:enrich>
+            <camel:enrich aggregationStrategy="cardInsertAggregation" aggregationStrategyMethodName="aggregateCardAndSet">
+                <camel:constant>direct:getSetByName</camel:constant>
+            </camel:enrich>
+            <camel:convertBodyTo type="String"/>
+            <camel:to uri="jdbc:dataSource"/>
+            <camel:to uri="direct:finalInsertProcessing"/>
+        </camel:route>
+        <camel:route>
             <camel:from uri="direct:getCard"/>
             <camel:choice>
                 <camel:when>
@@ -57,23 +80,27 @@
             </camel:marshal>
         </camel:route>
         <camel:route>
+            <camel:from uri="direct:getSetByName"/>
+            <camel:setBody>
+                <camel:constant>SELECT * FROM public.setname WHERE set_name = :?setName</camel:constant>
+            </camel:setBody>
+            <camel:to uri="jdbc:dataSource?useHeadersAsParameters=true&amp;outputType=SelectOne&amp;outputClass=org.learning.camel.entity.Set"/>
+        </camel:route>
+        <camel:route>
+            <camel:from uri="direct:getArtistByName"/>
+            <camel:setBody>
+                <camel:constant>SELECT * FROM public.artists WHERE artist_name = :?artist_name</camel:constant>
+            </camel:setBody>
+            <camel:to uri="jdbc:dataSource?useHeadersAsParameters=true&amp;outputType=SelectOne&amp;outputClass=org.learning.camel.entity.Artist"/>
+        </camel:route>
+        <camel:route>
             <camel:from uri="direct:createArtist"/>
             <camel:unmarshal>
                 <camel:json library="Jackson"/>
             </camel:unmarshal>
             <camel:process ref="artistQueryProcessor"/>
             <camel:to uri="jdbc:dataSource"/>
-            <camel:filter>
-                <camel:simple>${header.CamelJdbcUpdateCount} != 1</camel:simple>
-                <camel:to uri="direct:errorHandler"/>
-                <camel:stop/>
-            </camel:filter>
-            <camel:setHeader name="CamelHttpResponseCode">
-                <camel:constant>201</camel:constant>
-            </camel:setHeader>
-            <camel:setBody>
-                <camel:constant>New record successfully added</camel:constant>
-            </camel:setBody>
+            <camel:to uri="direct:finalInsertProcessing"/>
         </camel:route>
         <camel:route>
             <camel:from uri="direct:getArtist"/>
@@ -94,6 +121,20 @@
             </camel:setHeader>
             <camel:setBody>
                 <camel:constant>Forbidden: Invalid token</camel:constant>
+            </camel:setBody>
+        </camel:route>
+        <camel:route>
+            <camel:from uri="direct:finalInsertProcessing"/>
+            <camel:filter>
+                <camel:simple>${header.CamelJdbcUpdateCount} != 1</camel:simple>
+                <camel:to uri="direct:errorHandler"/>
+                <camel:stop/>
+            </camel:filter>
+            <camel:setHeader name="CamelHttpResponseCode">
+                <camel:constant>201</camel:constant>
+            </camel:setHeader>
+            <camel:setBody>
+                <camel:constant>New record successfully added</camel:constant>
             </camel:setBody>
         </camel:route>
     </camel:routeContext>
