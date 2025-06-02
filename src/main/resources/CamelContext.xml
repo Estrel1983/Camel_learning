@@ -14,6 +14,9 @@
     <import resource="classpath:routes/EmailRoutes.xml"/>
     <import resource="classpath:routes/DataTransformationRoutes.xml"/>
     <camel:camelContext id="mainContext">
+        <camel:packageScan>
+            <camel:package>org.learning.camel.bean.converter</camel:package>
+        </camel:packageScan>
         <camel:routeContextRef ref="jdbcRoutes"/>
         <camel:routeContextRef ref="eipRoutes"/>
         <camel:routeContextRef ref="greetingRoutes"/>
