@@ -5,11 +5,16 @@ import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.dataformat.JsonDataFormat;
 import org.apache.camel.model.dataformat.JsonLibrary;
+import org.apache.camel.processor.aggregate.DefaultAggregateController;
 import org.apache.camel.support.ExpressionAdapter;
 import org.learning.camel.bean.MessageFilterBean;
 import org.learning.camel.bean.aggregator.*;
+import org.learning.camel.bean.expressions.SimpleCorrelationExpression;
 import org.learning.camel.bean.utils.RecipientListResolver;
+import org.learning.camel.bean.utils.RepositoryCreator;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -17,12 +22,50 @@ import java.util.concurrent.ExecutorService;
 public class EipRouteBuilder extends RouteBuilder {
     @Override
     public void configure() throws Exception {
-
         ExecutorService executor = getCamelContext().getExecutorServiceManager().newFixedThreadPool(this, "myPool", 2);
         getCamelContext().getRegistry().bind("pojoAggregation", new PojoAggregation());
         getCamelContext().getRegistry().bind("stringAggregationStrategy", new StringAggregationStrategy());
         JsonDataFormat myJson = new JsonDataFormat(JsonLibrary.Jackson);
         ArrayList<String> recList = new ArrayList<>(List.of("direct:firstDestination", "direct:secondDestination", "direct:thirdDestination"));
+        DefaultAggregateController aggregateController = new DefaultAggregateController();
+
+
+        from("undertow:{{undertow.http}}/aggregatorWithPredicate")
+                .aggregate(new SimpleCorrelationExpression(),new AggregationStrategyWithPredicate())
+                .completionTimeout(12L)
+                .log("${body}");
+        from("undertow:{{undertow.http}}/aggregator")
+                .aggregate(new SimpleCorrelationExpression(),new StringAggregationStrategy())
+//                        .completionPredicate(
+//                       exchange -> {int count = exchange.getProperty(Exchange.AGGREGATED_SIZE, Integer.class);return count > 2;})
+//                    .header("aggregate")
+//                    .simple("${header.aggregate}")
+                    .completionSize(3)
+                    .completionTimeout(10000)
+//                    .aggregationStrategy(new StringAggregationStrategy())
+//                .aggregate(header("aggregate"),new StringAggregationStrategy())
+//                        .completionSize(3)
+                        .log("${body}");
+//        from ("undertow:{{undertow.http}}/repositoryAggregation")
+//                .log("My body is - ${body}")
+//                .aggregate(new SimpleCorrelationExpression(),new StringAggregationStrategy())
+//                .aggregationRepository(RepositoryCreator.jdbcRepositoryCreator()).optimisticLocking()
+//                .completionSize(3)
+//                .log("${body}");
+        from ("undertow:{{undertow.http}}/auctionAggregation")
+                .aggregate(header("auctionId"),new AuctionAggregationStrategy())
+                .aggregationRepository(RepositoryCreator.jdbcRepositoryCreator()).parallelProcessing(false)
+                .completionTimeout(300000L)
+                .aggregateController(aggregateController)
+                .log("Winner is - ${headers.owner} with bid - ${headers.bid}");
+        from("undertow:{{undertow.http}}/auctionDiscard")
+                .process(new Processor() {
+                    @Override
+                    public void process(Exchange exchange) throws Exception {
+                        int result = aggregateController.forceDiscardingOfGroup(exchange.getIn().getHeader("auctionId", String.class));
+                        exchange.getIn().setBody(result == 1 ? "Auction was discarded" : "Auction remained active");
+                    }
+                });
 
         from("undertow:{{undertow.http}}/pollEnricher")
                 .pollEnrich("imaps://{{mail.host}}:{{mail.port}}?username={{mail.username}}&password={{mail.password}}&delete=false&unseen=true&folderName=Camel",
