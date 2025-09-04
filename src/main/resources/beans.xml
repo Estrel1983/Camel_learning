@@ -27,16 +27,38 @@
     <bean id="stringAggregationStrategy" class="org.learning.camel.bean.aggregator.StringAggregationStrategy"/>
     <bean id="artistAggregation" class="org.learning.camel.bean.aggregator.ArtistAggregation"/>
     <bean id="listAggregationStrategy" class="org.learning.camel.bean.aggregator.ListAggregationStrategy"/>
+    <bean id="simpleCorrelationExpression" class="org.learning.camel.bean.expressions.SimpleCorrelationExpression"/>
+    <bean id="simpleCompletionPredicate" class="org.learning.camel.bean.predicate.SimpleCompletionPredicate"/>
+    <bean id="auctionAggregationStrategy" class="org.learning.camel.bean.aggregator.AuctionAggregationStrategy"/>
     <bean id="myExecutor" class="java.util.concurrent.Executors" factory-method="newFixedThreadPool">
         <constructor-arg type="int" value="2"/>
     </bean>
     <bean id="messageFilterBean" class="org.learning.camel.bean.MessageFilterBean"/>
     <bean id="recipientListResolver" class="org.learning.camel.bean.utils.RecipientListResolver"/>
+    <bean id="aggregateController" class="org.apache.camel.processor.aggregate.DefaultAggregateController"/>
+    <bean id="discardProcessor" class="org.learning.camel.bean.DiscardProcessor">
+        <property name="aggregateController" ref="aggregateController"/>
+    </bean>
     <bean id="dataSource" class="org.apache.commons.dbcp2.BasicDataSource">
         <property name="driverClassName" value="org.postgresql.Driver"/>
         <property name="url" value="jdbc:postgresql://localhost:5432/carddb"/>
         <property name="username" value="postgres"/>
         <property name="password" value="postgres"/>
+    </bean>
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+    <bean id="aggregation_repo" class="org.apache.camel.processor.aggregate.jdbc.JdbcAggregationRepository">
+        <constructor-arg ref="transactionManager"/>
+        <constructor-arg value="aggregation_repo"/>
+        <constructor-arg ref="dataSource"/>
+        <property name="useRecovery" value="true"/>
+        <property name="headersToStoreAsText">
+            <list>
+                <value>owner</value>
+                <value>bid</value>
+            </list>
+        </property>
     </bean>
     <bean id="jdbc" class="org.apache.camel.component.jdbc.JdbcComponent">
         <property name="dataSource" ref="dataSource"/>
