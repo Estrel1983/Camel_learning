@@ -9,6 +9,53 @@
         http://camel.apache.org/schema/spring/camel-spring.xsd">
     <camel:routeContext id="eipRoutes">
         <camel:route>
+            <camel:from uri="undertow:{{undertow.http}}/aggregatorPredicate"/>
+            <camel:aggregate aggregationStrategy="stringAggregationStrategy" eagerCheckCompletion="true">
+                <camel:correlationExpression>
+                    <camel:method ref="simpleCorrelationExpression"/>
+                </camel:correlationExpression>
+                <camel:completionPredicate>
+                    <camel:method ref="simpleCompletionPredicate"/>
+                </camel:completionPredicate>
+                <camel:log message="${body}"/>
+            </camel:aggregate>
+        </camel:route>
+        <camel:route>
+            <camel:from uri="undertow:{{undertow.http}}/aggregator"/>
+            <camel:aggregate aggregationStrategy="stringAggregationStrategy" completionSize="3" completionTimeout="10000">
+                <camel:correlationExpression>
+                    <camel:method ref="simpleCorrelationExpression"/>
+                </camel:correlationExpression>
+                <camel:log message="${body}"/>
+            </camel:aggregate>
+        </camel:route>
+        <camel:route>
+            <camel:from uri="undertow:{{undertow.http}}/repositoryAggregation"/>
+            <camel:aggregate aggregationStrategy="stringAggregationStrategy" aggregationRepository="aggregation_repo" completionSize="3">
+                <camel:correlationExpression>
+                    <camel:method ref="simpleCorrelationExpression"/>
+                </camel:correlationExpression>
+                <camel:log message="${body}"/>
+            </camel:aggregate>
+        </camel:route>
+        <camel:route>
+            <camel:from uri="undertow:{{undertow.http}}/auctionAggregation"/>
+            <camel:aggregate aggregationStrategy="auctionAggregationStrategy"
+                             aggregationRepository="aggregation_repo"
+                             completionTimeout="300000"
+                             parallelProcessing="false"
+                             aggregateController="aggregateController">
+                <camel:correlationExpression>
+                    <camel:header>auctionId</camel:header>
+                </camel:correlationExpression>
+                <camel:log message="Winner is - ${headers.owner} with bid - ${headers.bid}"/>
+            </camel:aggregate>
+        </camel:route>
+        <camel:route>
+            <camel:from uri="undertow:{{undertow.http}}/auctionDiscard"/>
+            <camel:bean ref="discardProcessor"/>
+        </camel:route>
+        <camel:route>
             <camel:from uri="undertow:{{undertow.http}}/pollEnricher"/>
             <camel:pollEnrich timeout="0" aggregationStrategy="emailAggregator">
                 <camel:constant>imaps://{{mail.host}}:{{mail.port}}?username={{mail.username}}&amp;password={{mail.password}}&amp;delete=false&amp;unseen=true&amp;folderName=Camel</camel:constant>

@@ -14,20 +14,20 @@ public final class MyApplication {
     private MyApplication() {
     }
 
-    public static void main(String[] args) throws Exception {
-        Main main = new Main(MyApplication.class);
-        main.setPropertyPlaceholderLocations("classpath:additional.properties,classpath:mail.properties");
-        main.run(args);
-    }
 //    public static void main(String[] args) throws Exception {
-//        ClassPathXmlApplicationContext context =
-//                new ClassPathXmlApplicationContext("CamelContext.xml");
-//        SpringCamelContext scc = context.getBean(SpringCamelContext.class);
-//        TypeConverterRegistry registry = scc.getTypeConverterRegistry();
-//        registry.addTypeConverters(new CardConverter());
-//        context.registerShutdownHook();
-//        System.out.println("Application started. Press Ctrl+C");
+//        Main main = new Main(MyApplication.class);
+//        main.setPropertyPlaceholderLocations("classpath:additional.properties,classpath:mail.properties");
+//        main.run(args);
 //    }
+    public static void main(String[] args) throws Exception {
+        ClassPathXmlApplicationContext context =
+                new ClassPathXmlApplicationContext("CamelContext.xml");
+        SpringCamelContext scc = context.getBean(SpringCamelContext.class);
+        TypeConverterRegistry registry = scc.getTypeConverterRegistry();
+        registry.addTypeConverters(new CardConverter());
+        context.registerShutdownHook();
+        System.out.println("Application started. Press Ctrl+C");
+    }
 //    public static void main(String[] args) throws Exception {
 //        CamelContext context = new DefaultCamelContext();
 //        context.addRoutes(new RouteBuilder() {
