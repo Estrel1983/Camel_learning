@@ -8,6 +8,7 @@ import org.apache.camel.model.dataformat.JsonLibrary;
 import org.apache.camel.processor.aggregate.DefaultAggregateController;
 import org.apache.camel.support.ExpressionAdapter;
 import org.learning.camel.bean.MessageFilterBean;
+import org.learning.camel.bean.RoutingSlip;
 import org.learning.camel.bean.aggregator.*;
 import org.learning.camel.bean.expressions.SimpleCorrelationExpression;
 import org.learning.camel.bean.utils.RecipientListResolver;
@@ -29,7 +30,15 @@ public class EipRouteBuilder extends RouteBuilder {
         ArrayList<String> recList = new ArrayList<>(List.of("direct:firstDestination", "direct:secondDestination", "direct:thirdDestination"));
         DefaultAggregateController aggregateController = new DefaultAggregateController();
 
-
+        from("undertow:{{undertow.http}}/routingSlip")
+                .setHeader("routingSlip").method(RoutingSlip.class, "getSlip")
+                .routingSlip(header("routingSlip"));
+        from("direct:enrichAmazonMessage")
+                .setBody().simple("${body} appended for Amazon");
+        from("direct:english")
+                .setBody().simple("${body} in English");
+        from("direct:spanish")
+                .setBody().simple("${body} in Spanish");
         from("undertow:{{undertow.http}}/aggregatorWithPredicate")
                 .aggregate(new SimpleCorrelationExpression(),new AggregationStrategyWithPredicate())
                 .completionTimeout(12L)
